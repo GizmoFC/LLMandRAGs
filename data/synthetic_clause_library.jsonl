@@ -1,0 +1,4 @@
+# Hand-curated contract clauses in JSONL format
+# Each line should be a JSON object with "text" and "metadata" fields
+# Example format:
+# {"text": "clause text here", "metadata": {"clause_type": "termination", "contract_type": "employment", "jurisdiction": "US", "source": "synthetic"}} 

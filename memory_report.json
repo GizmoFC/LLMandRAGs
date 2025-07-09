@@ -1,0 +1,133 @@
+{
+  "timestamp": 1752064219.7243054,
+  "current_status": {
+    "memory_usage_gb": 6.54,
+    "available_memory_gb": 1.17,
+    "total_memory_gb": 7.72,
+    "memory_percent": 84.8,
+    "process_memory_mb": 19.89,
+    "is_critical": false,
+    "is_warning": false
+  },
+  "recommendations": [
+    "\ud83d\udcca MODERATE: Memory usage is moderate (>70%). You can:",
+    "   - Use standard models for most queries",
+    "   - Use 3-4 context documents safely",
+    "   - Monitor for memory spikes during complex queries"
+  ],
+  "snapshots": [
+    {
+      "timestamp": 1752064219.6744432,
+      "total_memory": 8286953472,
+      "available_memory": 1269039104,
+      "used_memory": 7017914368,
+      "memory_percent": 84.7,
+      "process_memory": 20852736,
+      "process_memory_percent": 0.2516333182086436
+    },
+    {
+      "timestamp": 1752064219.681371,
+      "total_memory": 8286953472,
+      "available_memory": 1269030912,
+      "used_memory": 7017922560,
+      "memory_percent": 84.7,
+      "process_memory": 20856832,
+      "process_memory_percent": 0.25168274529923657
+    },
+    {
+      "timestamp": 1752064219.6897235,
+      "total_memory": 8286953472,
+      "available_memory": 1268989952,
+      "used_memory": 7017963520,
+      "memory_percent": 84.7,
+      "process_memory": 20856832,
+      "process_memory_percent": 0.25168274529923657
+    },
+    {
+      "timestamp": 1752064219.6953695,
+      "total_memory": 8286953472,
+      "available_memory": 1269043200,
+      "used_memory": 7017910272,
+      "memory_percent": 84.7,
+      "process_memory": 20856832,
+      "process_memory_percent": 0.25168274529923657
+    },
+    {
+      "timestamp": 1752064219.7015667,
+      "total_memory": 8286953472,
+      "available_memory": 1268985856,
+      "used_memory": 7017967616,
+      "memory_percent": 84.7,
+      "process_memory": 20856832,
+      "process_memory_percent": 0.25168274529923657
+    },
+    {
+      "timestamp": 1752064219.7075195,
+      "total_memory": 8286953472,
+      "available_memory": 1269014528,
+      "used_memory": 7017938944,
+      "memory_percent": 84.7,
+      "process_memory": 20860928,
+      "process_memory_percent": 0.2517321723898295
+    },
+    {
+      "timestamp": 1752064219.7166994,
+      "total_memory": 8286953472,
+      "available_memory": 1269383168,
+      "used_memory": 7017570304,
+      "memory_percent": 84.7,
+      "process_memory": 20860928,
+      "process_memory_percent": 0.2517321723898295
+    },
+    {
+      "timestamp": 1752064219.7241557,
+      "total_memory": 8286953472,
+      "available_memory": 1269829632,
+      "used_memory": 7017123840,
+      "memory_percent": 84.7,
+      "process_memory": 20860928,
+      "process_memory_percent": 0.2517321723898295
+    },
+    {
+      "timestamp": 1752064219.7296238,
+      "total_memory": 8286953472,
+      "available_memory": 1261051904,
+      "used_memory": 7025901568,
+      "memory_percent": 84.8,
+      "process_memory": 20860928,
+      "process_memory_percent": 0.2517321723898295
+    },
+    {
+      "timestamp": 1752064219.737683,
+      "total_memory": 8286953472,
+      "available_memory": 1261228032,
+      "used_memory": 7025725440,
+      "memory_percent": 84.8,
+      "process_memory": 20860928,
+      "process_memory_percent": 0.2517321723898295
+    }
+  ],
+  "model_capabilities": {
+    "gemma3:2b-instruct": {
+      "can_run": false,
+      "required_gb": 1.5,
+      "available_gb": 1.17,
+      "safety_margin_gb": -0.33000000000000007,
+      "recommendation": "\u274c Cannot run gemma3:2b-instruct - insufficient memory. Try gemma3:2b-instruct instead."
+    },
+    "gemma3:8b-instruct": {
+      "can_run": false,
+      "required_gb": 4.5,
+      "available_gb": 1.17,
+      "safety_margin_gb": -3.33,
+      "recommendation": "\u274c Cannot run gemma3:8b-instruct - insufficient memory. Try gemma3:2b-instruct instead."
+    },
+    "llama3.1:8b-instruct": {
+      "can_run": false,
+      "required_gb": 4.5,
+      "available_gb": 1.17,
+      "safety_margin_gb": -3.33,
+      "recommendation": "\u274c Cannot run llama3.1:8b-instruct - insufficient memory. Try gemma3:2b-instruct instead."
+    }
+  }
+}
