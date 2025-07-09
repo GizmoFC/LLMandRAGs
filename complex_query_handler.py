@@ -28,7 +28,7 @@ class ComplexQueryHandler:
         # Query type configurations
         self.configs = {
             "clause_improvement": QueryConfig(
-                max_context_docs=3,
+                max_context_docs=4,
                 max_prompt_length=1800,
                 timeout=120,
                 temperature=0.4,
@@ -36,7 +36,7 @@ class ComplexQueryHandler:
                 model="gemma3:2b-instruct"  # Use smaller model for complex tasks
             ),
             "clause_analysis": QueryConfig(
-                max_context_docs=2,
+                max_context_docs=3,
                 max_prompt_length=1500,
                 timeout=90,
                 temperature=0.3,
@@ -44,7 +44,7 @@ class ComplexQueryHandler:
                 model="gemma3:2b-instruct"
             ),
             "clause_comparison": QueryConfig(
-                max_context_docs=4,
+                max_context_docs=5,
                 max_prompt_length=2000,
                 timeout=150,
                 temperature=0.3,
@@ -52,7 +52,7 @@ class ComplexQueryHandler:
                 model="gemma3:8b-instruct"  # Use larger model for comparisons
             ),
             "general_search": QueryConfig(
-                max_context_docs=2,
+                max_context_docs=3,
                 max_prompt_length=1200,
                 timeout=60,
                 temperature=0.2,

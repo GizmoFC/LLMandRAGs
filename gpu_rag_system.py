@@ -1,53 +1,41 @@
 """
-Enhanced RAG System for Complex Contract Analysis
-Handles clause improvement, analysis, and complex queries with optimized memory usage
+GPU-Optimized RAG System
+Enhanced version for GPU deployment with larger models and better performance
 """
 
 import json
 import time
+import torch
 import requests
 from typing import List, Dict, Any, Optional
-from fastapi import FastAPI, HTTPException, Form
-from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
-import uvicorn
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
-import re
 
-class QueryRequest(BaseModel):
-    query: str
-    mode: str = "rag"
-    page: int = 1
-    model: str = "gemma3:8b-instruct"  # Use quantized model by default
-
-class QueryResponse(BaseModel):
-    answer: str
-    context_docs: List[Dict]
-    processing_time: float
-    model_used: str
-    context_size: int
-
-class EnhancedRAGSystem:
+class GPURAGSystem:
     def __init__(self):
+        # Check for GPU availability
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"🚀 Using device: {self.device}")
+        
+        # GPU-optimized configuration
+        self.config = {
+            "max_context_docs": 8,      # Can handle more with GPU
+            "max_prompt_length": 4000,  # Larger prompts
+            "timeout": 60,              # Faster with GPU
+            "temperature": 0.3,
+            "num_predict": 1024,        # Longer responses
+            "top_k": 20,                # More candidates
+            "model": "llama3.1:8b-instruct-q4_K_M"  # GPU-optimized model
+        }
+        
         self.model_name = "all-MiniLM-L6-v2"
         self.embedding_model = None
         self.faiss_index = None
         self.clauses = []
         self.clause_texts = []
         
-        # Enhanced configuration for complex queries
-        self.config = {
-            "max_context_docs": 4,      # Increased for better context coverage
-            "max_prompt_length": 1500,  # Balanced for quality vs speed
-            "timeout": 90,              # Increased timeout for complex queries
-            "temperature": 0.3,         # Lower for more focused responses
-            "num_predict": 512,         # Reasonable response length
-            "top_k": 10,                # More candidates for better selection
-        }
-        
-        print("🚀 Initializing Enhanced RAG System...")
+        print("🚀 Initializing GPU-Optimized RAG System...")
         self.load_data()
         self.load_embeddings()
         
@@ -75,16 +63,16 @@ class EnhancedRAGSystem:
             raise
     
     def load_embeddings(self):
-        """Load FAISS index and embedding model"""
-        print("Loading FAISS index and embedding model...")
+        """Load FAISS index and GPU-optimized embedding model"""
+        print("Loading FAISS index and GPU embedding model...")
         try:
-            # Load embedding model
-            self.embedding_model = SentenceTransformer(self.model_name)
+            # Load embedding model on GPU
+            self.embedding_model = SentenceTransformer(self.model_name, device=self.device)
             
             # Load FAISS index
             self.faiss_index = faiss.read_index("embeddings/output/cuad_faiss.index")
             
-            print("✅ FAISS index and embedding model loaded successfully")
+            print("✅ FAISS index and GPU embedding model loaded successfully")
         except Exception as e:
             print(f"❌ Error loading embeddings: {e}")
             raise
@@ -126,37 +114,37 @@ class EnhancedRAGSystem:
                     query_type = qtype
                     break
         
-        # Adjust configuration based on query type
+        # GPU-optimized configuration adjustments
         config_adjustments = {
             "clause_improvement": {
-                "max_context_docs": 5,
-                "max_prompt_length": 2000,
+                "max_context_docs": 8,
+                "max_prompt_length": 4000,
                 "temperature": 0.4,
-                "num_predict": 768
+                "num_predict": 1024
             },
             "clause_analysis": {
-                "max_context_docs": 4,
-                "max_prompt_length": 1800,
+                "max_context_docs": 6,
+                "max_prompt_length": 3500,
                 "temperature": 0.2,
-                "num_predict": 512
+                "num_predict": 768
             },
             "clause_comparison": {
-                "max_context_docs": 6,
-                "max_prompt_length": 2200,
+                "max_context_docs": 10,
+                "max_prompt_length": 4500,
                 "temperature": 0.3,
-                "num_predict": 640
+                "num_predict": 1280
             },
             "clause_search": {
-                "max_context_docs": 3,
-                "max_prompt_length": 1200,
+                "max_context_docs": 4,
+                "max_prompt_length": 2000,
                 "temperature": 0.1,
-                "num_predict": 256
+                "num_predict": 512
             },
             "general_question": {
-                "max_context_docs": 3,
-                "max_prompt_length": 1500,
+                "max_context_docs": 4,
+                "max_prompt_length": 2500,
                 "temperature": 0.3,
-                "num_predict": 512
+                "num_predict": 768
             }
         }
         
@@ -166,11 +154,11 @@ class EnhancedRAGSystem:
             "config": config_adjustments.get(query_type, {})
         }
     
-    def search_clauses(self, query: str, top_k: int = 10) -> List[Dict]:
-        """Enhanced search with better relevance scoring"""
+    def search_clauses(self, query: str, top_k: int = 20) -> List[Dict]:
+        """GPU-accelerated search with better relevance scoring"""
         start_time = time.time()
         
-        # Generate embedding for query
+        # Generate embedding for query on GPU
         query_embedding = self.embedding_model.encode([query])
         
         # Search FAISS index
@@ -186,22 +174,21 @@ class EnhancedRAGSystem:
                 relevant_clauses.append(clause)
         
         search_time = time.time() - start_time
-        print(f"FAISS search completed in {search_time:.2f}s")
+        print(f"🚀 GPU-accelerated FAISS search completed in {search_time:.2f}s")
         
         return relevant_clauses
     
     def build_enhanced_prompt(self, query: str, context_docs: List[Dict], query_type: str) -> str:
-        """Build context-aware prompts for different query types"""
+        """Build context-aware prompts optimized for GPU processing"""
         
         # Select relevant context based on query type
         if query_type == "clause_improvement":
-            # For improvement queries, focus on similar clauses and best practices
             context_texts = []
             for doc in context_docs[:self.config["max_context_docs"]]:
                 clause_text = doc.get("text", "")
                 # Use full_context if text is too short
                 if len(clause_text) < 100:
-                    clause_text = doc.get("full_context", "")[:1000]  # Limit full context length
+                    clause_text = doc.get("full_context", "")[:1500]  # More context with GPU
                 title = doc.get("contract_title", doc.get("title", "Unknown"))
                 if clause_text:
                     context_texts.append(f"RELEVANT CLAUSE ({title}):\n{clause_text}\n")
@@ -217,20 +204,19 @@ USER'S CLAUSE TO IMPROVE:
 INSTRUCTIONS:
 1. Analyze the user's clause for potential issues, gaps, or areas for improvement
 2. Reference the context clauses for best practices and effective language
-3. Provide an improved version of the clause with explanations
-4. Highlight key improvements made
-5. Suggest additional considerations if relevant
+3. Provide an improved version of the clause with detailed explanations
+4. Highlight key improvements made and their rationale
+5. Suggest additional considerations and potential risks
+6. Provide alternative approaches if applicable
 
-Please provide a comprehensive improvement with clear explanations."""
+Please provide a comprehensive improvement with clear explanations and practical recommendations."""
 
         elif query_type == "clause_analysis":
-            # For analysis queries, provide detailed explanations
             context_texts = []
             for doc in context_docs[:self.config["max_context_docs"]]:
                 clause_text = doc.get("text", "")
-                # Use full_context if text is too short
                 if len(clause_text) < 100:
-                    clause_text = doc.get("full_context", "")[:1000]  # Limit full context length
+                    clause_text = doc.get("full_context", "")[:1200]
                 title = doc.get("contract_title", doc.get("title", "Unknown"))
                 if clause_text:
                     context_texts.append(f"REFERENCE CLAUSE ({title}):\n{clause_text}\n")
@@ -248,18 +234,17 @@ INSTRUCTIONS:
 2. Reference relevant aspects from the context clauses
 3. Explain legal implications and considerations
 4. Offer practical insights and recommendations
-5. Use clear, professional language
+5. Identify potential risks and mitigation strategies
+6. Use clear, professional language
 
-Please provide a detailed analysis with practical insights."""
+Please provide a detailed analysis with practical insights and actionable recommendations."""
 
         else:
-            # General RAG prompt for other query types
             context_texts = []
             for doc in context_docs[:self.config["max_context_docs"]]:
                 clause_text = doc.get("text", "")
-                # Use full_context if text is too short
                 if len(clause_text) < 100:
-                    clause_text = doc.get("full_context", "")[:1000]  # Limit full context length
+                    clause_text = doc.get("full_context", "")[:1200]
                 title = doc.get("contract_title", doc.get("title", "Unknown"))
                 if clause_text:
                     context_texts.append(f"RELEVANT CLAUSE ({title}):\n{clause_text}\n")
@@ -278,21 +263,21 @@ INSTRUCTIONS:
 3. Provide practical and actionable information
 4. If the context doesn't fully address the question, acknowledge limitations
 5. Use clear, professional language
+6. Provide comprehensive insights and recommendations
 
-Please provide a comprehensive answer."""
+Please provide a comprehensive answer with practical guidance."""
 
         # Truncate if too long
         word_count = len(prompt.split())
         if word_count > self.config["max_prompt_length"]:
-            # Truncate context while keeping essential parts
             words = prompt.split()
             prompt = " ".join(words[:self.config["max_prompt_length"]])
             prompt += "\n\n[Context truncated for length]"
         
         return prompt
     
-    def query_ollama(self, prompt: str, model: str = "gemma3:8b-instruct") -> str:
-        """Query Ollama with enhanced error handling and retry logic"""
+    def query_ollama(self, prompt: str, model: str = "llama3.1:8b-instruct-q4_K_M") -> str:
+        """Query Ollama with GPU-optimized parameters"""
         url = "http://localhost:11434/api/generate"
         
         payload = {
@@ -304,7 +289,8 @@ Please provide a comprehensive answer."""
                 "num_predict": self.config["num_predict"],
                 "top_k": 40,
                 "top_p": 0.9,
-                "repeat_penalty": 1.1
+                "repeat_penalty": 1.1,
+                "gpu_layers": 50  # Enable GPU acceleration
             }
         }
         
@@ -320,6 +306,9 @@ Please provide a comprehensive answer."""
             if not answer or answer.lower() in ["unknown", "i don't know", "i cannot answer"]:
                 return "I apologize, but I couldn't generate a meaningful response. This might be due to insufficient context or the complexity of the query. Please try rephrasing your question or providing more specific details."
             
+            generation_time = time.time() - start_time
+            print(f"🚀 GPU-accelerated generation completed in {generation_time:.2f}s")
+            
             return answer
             
         except requests.exceptions.Timeout:
@@ -330,8 +319,8 @@ Please provide a comprehensive answer."""
         except Exception as e:
             return f"Unexpected error: {str(e)}"
     
-    def process_query(self, query: str, model: str = "gemma3:8b-instruct") -> Dict[str, Any]:
-        """Process a query with enhanced context selection and response generation"""
+    def process_query(self, query: str, model: str = "llama3.1:8b-instruct-q4_K_M") -> Dict[str, Any]:
+        """Process a query with GPU-optimized context selection and response generation"""
         start_time = time.time()
         
         # Classify query type
@@ -343,7 +332,7 @@ Please provide a comprehensive answer."""
             self.config[key] = value
         
         print(f"🔍 Query type: {query_type} (confidence: {query_info['confidence']:.2f})")
-        print(f"📊 Using config: {self.config}")
+        print(f"📊 Using GPU-optimized config: {self.config}")
         
         # Search for relevant clauses
         relevant_clauses = self.search_clauses(query, self.config["top_k"])
@@ -354,173 +343,49 @@ Please provide a comprehensive answer."""
                 "context_docs": [],
                 "processing_time": time.time() - start_time,
                 "model_used": model,
-                "context_size": 0
+                "context_size": 0,
+                "query_type": query_type
             }
         
         # Build enhanced prompt
         prompt = self.build_enhanced_prompt(query, relevant_clauses, query_type)
         
-        print(f"📝 Built {query_type} prompt: {len(prompt.split())} words")
-        print(f"🔗 Using {len(relevant_clauses[:self.config['max_context_docs']])} context documents")
-        
-        # Query Ollama
-        print(f"🚀 Sending {query_type} request to Ollama (model: {model})...")
+        # Generate response
         answer = self.query_ollama(prompt, model)
         
-        processing_time = time.time() - start_time
+        total_time = time.time() - start_time
         
         return {
             "answer": answer,
             "context_docs": relevant_clauses[:self.config["max_context_docs"]],
-            "processing_time": processing_time,
+            "processing_time": total_time,
             "model_used": model,
             "context_size": len(prompt.split()),
-            "query_type": query_type
+            "query_type": query_type,
+            "device": str(self.device)
         }
 
-# Initialize FastAPI app
-app = FastAPI(title="Enhanced CUAD RAG System", version="2.0")
-
-# Initialize RAG system
-rag_system = None
-
-@app.on_event("startup")
-async def startup_event():
-    global rag_system
-    rag_system = EnhancedRAGSystem()
-    print("✅ Enhanced RAG System ready!")
-
-@app.get("/", response_class=HTMLResponse)
-async def home():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Enhanced CUAD RAG System</title>
-        <style>
-            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-            .container { background: #f5f5f5; padding: 20px; border-radius: 10px; }
-            textarea { width: 100%; height: 100px; margin: 10px 0; }
-            button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
-            .response { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }
-            .context { background: #e9ecef; padding: 10px; margin: 5px 0; border-radius: 3px; font-size: 0.9em; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>🧠 Enhanced CUAD RAG System</h1>
-            <p><strong>Capabilities:</strong> Clause improvement, analysis, comparison, and complex legal queries</p>
-            
-            <form method="POST">
-                <label><strong>Query:</strong></label><br>
-                <textarea name="query" placeholder="Ask about clauses, request improvements, or analyze legal text..."></textarea><br>
-                
-                <label><strong>Model:</strong></label><br>
-                <select name="model">
-                    <option value="gemma3:8b-instruct">Gemma3 8B Instruct (Recommended)</option>
-                    <option value="gemma3:2b-instruct">Gemma3 2B Instruct (Fast)</option>
-                    <option value="llama3.1:8b-instruct">Llama3.1 8B Instruct (High Quality)</option>
-                </select><br><br>
-                
-                <button type="submit">🚀 Process Query</button>
-            </form>
-            
-            <div id="examples">
-                <h3>💡 Example Queries:</h3>
-                <ul>
-                    <li><strong>Clause Improvement:</strong> "Improve this confidentiality clause: [paste clause here]"</li>
-                    <li><strong>Analysis:</strong> "Analyze the risks in this intellectual property clause"</li>
-                    <li><strong>Search:</strong> "Find clauses related to data protection and privacy"</li>
-                    <li><strong>Comparison:</strong> "Compare termination clauses across different contract types"</li>
-                </ul>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-
-@app.post("/", response_class=HTMLResponse)
-async def process_query(
-    query: str = Form(...),
-    model: str = Form("gemma3:8b-instruct")
-):
-    if not rag_system:
-        raise HTTPException(status_code=500, detail="RAG system not initialized")
+def main():
+    """Test the GPU-optimized RAG system"""
+    system = GPURAGSystem()
     
-    if not query.strip():
-        return "Please provide a query."
+    test_queries = [
+        "Find intellectual property clauses",
+        "Analyze this confidentiality clause: [Employee shall not disclose company secrets]",
+        "Compare termination clauses across different contract types"
+    ]
     
-    print(f"Processing: {query} (model: {model})")
-    
-    try:
-        result = rag_system.process_query(query, model)
+    for query in test_queries:
+        print(f"\n{'='*60}")
+        print(f"Testing: {query}")
+        print(f"{'='*60}")
         
-        # Build HTML response
-        html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Enhanced CUAD RAG System - Results</title>
-            <style>
-                body {{ font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }}
-                .container {{ background: #f5f5f5; padding: 20px; border-radius: 10px; }}
-                .response {{ background: white; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }}
-                .context {{ background: #e9ecef; padding: 10px; margin: 5px 0; border-radius: 3px; font-size: 0.9em; }}
-                .stats {{ background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0; }}
-                .back-btn {{ background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>🧠 Enhanced CUAD RAG System - Results</h1>
-                
-                <div class="stats">
-                    <strong>Query Type:</strong> {result.get('query_type', 'Unknown')}<br>
-                    <strong>Model Used:</strong> {result['model_used']}<br>
-                    <strong>Processing Time:</strong> {result['processing_time']:.2f}s<br>
-                    <strong>Context Size:</strong> {result['context_size']} words<br>
-                    <strong>Context Documents:</strong> {len(result['context_docs'])}
-                </div>
-                
-                <div class="response">
-                    <h3>🤖 Answer:</h3>
-                    <p>{result['answer'].replace(chr(10), '<br>')}</p>
-                </div>
-                
-                <div class="response">
-                    <h3>📚 Context Documents Used:</h3>
-                    {chr(10).join([f'<div class="context"><strong>{doc.get("title", "Unknown")}</strong><br>{doc.get("clause_text", "")[:200]}...</div>' for doc in result['context_docs']])}
-                </div>
-                
-                <a href="/" class="back-btn">← Back to Query</a>
-            </div>
-        </body>
-        </html>
-        """
+        result = system.process_query(query)
         
-        return html
-        
-    except Exception as e:
-        return f"Error processing query: {str(e)}"
-
-@app.post("/api/query")
-async def api_query(request: QueryRequest):
-    if not rag_system:
-        raise HTTPException(status_code=500, detail="RAG system not initialized")
-    
-    try:
-        result = rag_system.process_query(request.query, request.model)
-        return QueryResponse(**result)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"⏱️  Total time: {result['processing_time']:.2f}s")
+        print(f"🤖 Answer: {result['answer'][:200]}...")
+        print(f"📚 Context docs: {len(result['context_docs'])}")
+        print(f"🔧 Device: {result['device']}")
 
 if __name__ == "__main__":
-    print("🚀 Starting Enhanced CUAD RAG System...")
-    print("📊 Enhanced features:")
-    print("   - Intelligent query classification")
-    print("   - Context-aware prompt building")
-    print("   - Optimized for complex legal analysis")
-    print("   - Support for clause improvement queries")
-    print("   - Memory-efficient quantized models")
-    
-    uvicorn.run(app, host="0.0.0.0", port=8011) 
+    main() 
