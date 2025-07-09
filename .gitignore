@@ -59,4 +59,12 @@ Thumbs.db
 
 # Temporary files
 *.tmp
-*.temp 
+*.temp
+
+# Large data files
+*.jsonl
+embeddings/
+data/
+*.index
+*.faiss
+memory_report.json 
