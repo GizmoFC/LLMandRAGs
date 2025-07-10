@@ -40,7 +40,7 @@ html_template = """
         .stats {{ background: #e2e3e5; padding: 10px; border-radius: 5px; margin: 10px 0; }}
         .section {{ margin-bottom: 32px; }}
         .performance {{ background: #d4edda; border-left: 5px solid #28a745; padding: 10px; margin: 10px 0; }}
-        .model-selector {{ display: flex; gap: 10px; margin: 10px 0; }}
+        .model-selector {{ display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }}
         .model-option {{ padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }}
         .model-option.selected {{ background: #007bff; color: white; }}
     </style>
@@ -50,7 +50,7 @@ html_template = """
         <h1>🚀 GPU-Optimized RAG Dashboard <span class="gpu-badge">GPU ACCELERATED</span></h1>
         
         <div class="performance">
-            <strong>⚡ Performance Mode:</strong> GPU-accelerated with larger models and enhanced context
+            <strong>⚡ Performance Mode:</strong> GPU-accelerated with Mistral and enhanced context
         </div>
         
         <div class="section">
@@ -60,6 +60,7 @@ html_template = """
                 
                 <label><strong>Model Selection:</strong></label><br>
                 <div class="model-selector">
+                    <div class="model-option {model_mistral}" onclick="selectModel('mistral:7b-instruct')">🌪️ Mistral 7B (Recommended)</div>
                     <div class="model-option {model_llama}" onclick="selectModel('llama3.1:8b-instruct-q4_K_M')">🦙 Llama 3.1 8B (Fast)</div>
                     <div class="model-option {model_gemma}" onclick="selectModel('gemma2:9b-instruct-q4_K_M')">💎 Gemma 2 9B (Balanced)</div>
                     <div class="model-option {model_code}" onclick="selectModel('codellama:13b-instruct-q4_K_M')">🐍 CodeLlama 13B (Advanced)</div>
@@ -116,14 +117,15 @@ async def home():
         query="", 
         results="", 
         memory_status=memory_status,
-        model_llama="selected",
+        model_mistral="selected",
+        model_llama="",
         model_gemma="",
         model_code="",
-        selected_model="llama3.1:8b-instruct-q4_K_M"
+        selected_model="mistral:7b-instruct"
     )
 
 @app.post("/", response_class=HTMLResponse)
-async def process_query(query: str = Form(...), model: str = Form("llama3.1:8b-instruct-q4_K_M")):
+async def process_query(query: str = Form(...), model: str = Form("mistral:7b-instruct")):
     memory_status = json.dumps(memory_monitor.get_current_memory_status(), indent=2)
     
     if not query.strip():
@@ -131,6 +133,7 @@ async def process_query(query: str = Form(...), model: str = Form("llama3.1:8b-i
             query="", 
             results="<p>Please provide a query.</p>", 
             memory_status=memory_status,
+            model_mistral="selected" if "mistral" in model else "",
             model_llama="selected" if "llama" in model else "",
             model_gemma="selected" if "gemma" in model else "",
             model_code="selected" if "code" in model else "",
@@ -158,6 +161,7 @@ async def process_query(query: str = Form(...), model: str = Form("llama3.1:8b-i
         query=query, 
         results=response_html, 
         memory_status=memory_status,
+        model_mistral="selected" if "mistral" in model else "",
         model_llama="selected" if "llama" in model else "",
         model_gemma="selected" if "gemma" in model else "",
         model_code="selected" if "code" in model else "",

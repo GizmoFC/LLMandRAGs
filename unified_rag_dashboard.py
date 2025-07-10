@@ -20,10 +20,10 @@ rag_system = EnhancedRAGSystem()
 complex_handler = ComplexQueryHandler()
 memory_monitor = MemoryMonitor()
 
-# Override default models to use lightweight gemma:2b-instruct
-rag_system.config["model"] = "gemma:2b-instruct"
+# Override default models to use lightweight gemma3:latest
+rag_system.config["model"] = "gemma3:latest"
 for config in complex_handler.configs.values():
-    config.model = "gemma:2b-instruct"
+    config.model = "gemma3:latest"
 
 app = FastAPI(title="Unified RAG Dashboard", version="1.0")
 
@@ -83,7 +83,7 @@ html_template = """
 </html>
 """
 
-DEFAULT_MODEL = "mistral:7b-instruct"
+DEFAULT_MODEL = "gemma3:latest"
 OLLAMA_URL = "http://localhost:11434"
 
 @app.get("/", response_class=HTMLResponse)
@@ -92,12 +92,7 @@ async def home():
     return html_template.format(
         query="", 
         results="", 
-        memory_status=memory_status,
-        model_llama="",
-        model_gemma="",
-        model_code="",
-        model_mistral="selected",
-        selected_model=DEFAULT_MODEL
+        memory_status=memory_status
     )
 
 @app.post("/", response_class=HTMLResponse)
@@ -107,7 +102,7 @@ async def process_query(query: str = Form(...), handler: str = Form("rag")):
         return html_template.format(query="", results="<p>Please provide a query.</p>", memory_status=memory_status)
     
     if handler == "rag":
-        result = rag_system.process_query(query, model=DEFAULT_MODEL, ollama_url=OLLAMA_URL)
+        result = rag_system.process_query(query, model=DEFAULT_MODEL)
     else:
         result = complex_handler.process_complex_query(query)
     

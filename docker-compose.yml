@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  rag-gpu-system:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8013:8013"  # GPU Dashboard
+      - "11434:11434"  # Ollama API
+    volumes:
+      - ./data:/app/data
+      - ./embeddings:/app/embeddings
+      - ollama_models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - NVIDIA_VISIBLE_DEVICES=all
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8013/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  ollama_models:
+    driver: local 
