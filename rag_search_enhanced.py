@@ -291,9 +291,9 @@ Please provide a comprehensive answer."""
         
         return prompt
     
-    def query_ollama(self, prompt: str, model: str = "gemma3:8b-instruct") -> str:
+    def query_ollama(self, prompt: str, model: str = "mistral:7b-instruct", ollama_url: str = "http://localhost:11434") -> str:
         """Query Ollama with enhanced error handling and retry logic"""
-        url = "http://localhost:11434/api/generate"
+        url = ollama_url + "/api/generate"
         
         payload = {
             "model": model,

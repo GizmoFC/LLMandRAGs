@@ -12,6 +12,9 @@ from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 
+DEFAULT_MODEL = "mistral:7b-instruct"
+OLLAMA_URL = "http://localhost:11434"
+
 class GPURAGSystem:
     def __init__(self):
         # Check for GPU availability
@@ -276,9 +279,9 @@ Please provide a comprehensive answer with practical guidance."""
         
         return prompt
     
-    def query_ollama(self, prompt: str, model: str = "llama3.1:8b-instruct-q4_K_M") -> str:
+    def query_ollama(self, prompt: str, model: str = DEFAULT_MODEL, ollama_url: str = OLLAMA_URL) -> str:
         """Query Ollama with GPU-optimized parameters"""
-        url = "http://localhost:11434/api/generate"
+        url = ollama_url + "/api/generate"
         
         payload = {
             "model": model,
@@ -319,7 +322,7 @@ Please provide a comprehensive answer with practical guidance."""
         except Exception as e:
             return f"Unexpected error: {str(e)}"
     
-    def process_query(self, query: str, model: str = "llama3.1:8b-instruct-q4_K_M") -> Dict[str, Any]:
+    def process_query(self, query: str, model: str = DEFAULT_MODEL) -> Dict[str, Any]:
         """Process a query with GPU-optimized context selection and response generation"""
         start_time = time.time()
         

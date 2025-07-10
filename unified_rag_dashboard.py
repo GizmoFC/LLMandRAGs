@@ -83,10 +83,22 @@ html_template = """
 </html>
 """
 
+DEFAULT_MODEL = "mistral:7b-instruct"
+OLLAMA_URL = "http://localhost:11434"
+
 @app.get("/", response_class=HTMLResponse)
 async def home():
     memory_status = json.dumps(memory_monitor.get_current_memory_status(), indent=2)
-    return html_template.format(query="", results="", memory_status=memory_status)
+    return html_template.format(
+        query="", 
+        results="", 
+        memory_status=memory_status,
+        model_llama="",
+        model_gemma="",
+        model_code="",
+        model_mistral="selected",
+        selected_model=DEFAULT_MODEL
+    )
 
 @app.post("/", response_class=HTMLResponse)
 async def process_query(query: str = Form(...), handler: str = Form("rag")):
@@ -95,7 +107,7 @@ async def process_query(query: str = Form(...), handler: str = Form("rag")):
         return html_template.format(query="", results="<p>Please provide a query.</p>", memory_status=memory_status)
     
     if handler == "rag":
-        result = rag_system.process_query(query, model="gemma:2b-instruct")
+        result = rag_system.process_query(query, model=DEFAULT_MODEL, ollama_url=OLLAMA_URL)
     else:
         result = complex_handler.process_complex_query(query)
     
