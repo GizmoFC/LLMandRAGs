@@ -28,8 +28,9 @@ from langchain_community.llms import Ollama
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 
+
 # === 1. Paths ===
-FAISS_INDEX_PATH = "embeddings/output/cuad_faiss.index"
+FAISS_INDEX_PATH = "../embeddings/output"
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 OLLAMA_MODEL_NAME = "gemma3"  # Change this if you're using another model
 
